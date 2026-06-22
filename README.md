@@ -56,3 +56,4 @@ Health: `GET /healthz`. Swagger (after `make gen-swagger`): `/swagger/index.html
 ## Deploy
 
 VPS + Docker Compose (`docker-compose.yml` — postgres/redis/minio/migrate/api/worker). `Dockerfile` is multi-stage (`ARG TARGET=api|worker|migrate|seed-admin`). Reverse proxy / SSL / domain are handled outside compose.
+# VTV-src-base-backend
