@@ -1,0 +1,66 @@
+# App config — copy to config/base.yaml + config/<env>.yaml then fill in values.
+# Viper reads base.yaml first, then overrides with <env>.yaml. Env vars APP_* override last.
+env: dev
+
+http:
+  host: 0.0.0.0
+  port: 8888
+  base_url: http://localhost:8888
+  read_timeout: 30s
+  write_timeout: 30s
+  cors_allow_origins:
+    - http://localhost:5173   # FE dev
+  trusted_proxies: []          # empty = do not trust X-Forwarded-For
+
+postgres:
+  dsn: postgres://app:app@localhost:5432/appdb?sslmode=disable
+  max_open_conns: 25
+  max_idle_conns: 5
+  conn_max_lifetime: 1h
+  log_level: warn              # silent | error | warn | info
+
+redis:
+  addr: 127.0.0.1:6379
+  password: ""
+  db: 0
+
+auth:
+  jwt_secret: "CHANGE_ME_min_32_bytes_random"      # required, never blank/hardcoded in prod
+  jwt_ttl: 168h                                     # 7 days
+  refresh_ttl: 720h
+  cookie_name: app_token
+  cookie_secure: false                              # true in prod (HTTPS)
+  cookie_domain: ""
+  profile_cache_ttl: 1h
+internal_api_key: "CHANGE_ME_internal_api_key"      # for /internal/api/v1/*
+
+storage:
+  provider: minio                                   # minio | r2 (s3-compatible)
+  endpoint: 127.0.0.1:9000
+  use_ssl: false
+  access_key: minio
+  secret_key: minio123
+  bucket: app-uploads
+  public_base_url: http://localhost:9000/app-uploads  # or CDN/R2 public URL
+  presign_get_ttl: 15m
+  max_upload_bytes: 10485760                         # 10 MB
+
+queue:
+  redis_addr: 127.0.0.1:6379
+  redis_db: 1
+  concurrency: 10
+
+logger:
+  level: debug                                      # debug | info | warn | error
+  format: console                                   # console | json
+  output: stdout                                    # stdout | stderr | /path/to/file
+  time_format: "2006-01-02T15:04:05.000Z07:00"
+
+# Optional external integrations
+integrations:
+  smtp:
+    host: ""
+    port: 587
+    username: ""
+    password: ""
+    from: "no-reply@example.com"

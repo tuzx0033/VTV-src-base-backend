@@ -1,0 +1,70 @@
+# Local dev infra + app. Reverse proxy / SSL / domain handled outside compose.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: appdb
+    ports: ["5455:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d appdb"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6399:6379"]
+    volumes: ["redisdata:/data"]
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    ports: ["9000:9000", "9001:9001"]
+    volumes: ["miniodata:/data"]
+
+  migrate:
+    build:
+      context: .
+      args: { TARGET: migrate }
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      MIGRATE_DSN: postgres://app:app@postgres:5432/appdb?sslmode=disable
+    command: ["up"]
+    restart: "no"
+    profiles: ["app"]
+
+  api:
+    build:
+      context: .
+      args: { TARGET: api }
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_started }
+      migrate: { condition: service_completed_successfully }
+    ports: ["8080:8080"]
+    environment:
+      APP_ENV: dev
+    profiles: ["app"]
+
+  worker:
+    build:
+      context: .
+      args: { TARGET: worker }
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_started }
+    environment:
+      APP_ENV: dev
+    profiles: ["app"]
+
+volumes:
+  pgdata: {}
+  redisdata: {}
+  miniodata: {}

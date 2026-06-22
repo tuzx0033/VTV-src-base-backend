@@ -1,0 +1,39 @@
+# binaries
+/bin/
+/tmp/
+*.exe
+/api
+/worker
+/migrate
+/seed-admin
+
+# config — only commit *.example.yaml
+/config/base.yaml
+/config/dev.yaml
+/config/staging.yaml
+/config/prod.yaml
+/config/local.yaml
+*.env
+.env*
+
+# generated
+# /docs/swagger/
+
+# go
+/vendor/
+*.test
+*.out
+coverage.*
+
+# os / ide
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# claude / local tooling
+.claude/
+
+# logs / data
+*.log
+/data/
